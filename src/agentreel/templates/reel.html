@@ -11,6 +11,7 @@
   --user:#2f5d50;--user-bg:#e5efe9;--asst:#1d1b17;--think:#7a6a3a;--tool:#3b4a8c;--tool-bg:#eceffa;
   --ok:#2f7a4b;--err:#b23a2b;--err-bg:#fbeae6;--add:#e3f3e7;--add-ink:#1f6b39;--del:#fbe7e4;--del-ink:#9b2c1f;
   --accent:#c2562b;--code-bg:#f1ede3;
+  --p0:#3b4a8c;--p1:#c2562b;--p2:#2f7a4b;--p3:#8a5a9e;--p4:#a07a12;--p5:#2a7b8c;--p6:#9b3d5a;--p7:#5c6b2e;--p8:#6b665c;
   --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
   --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
@@ -21,12 +22,14 @@
   --user:#8fc9b4;--user-bg:#1d2a25;--asst:#ece7dc;--think:#cdb877;--tool:#a9b6f2;--tool-bg:#1e2233;
   --ok:#7fcf9a;--err:#f08a7a;--err-bg:#2e1c19;--add:#16291c;--add-ink:#8fd6a6;--del:#2f1a17;--del-ink:#f2a092;
   --accent:#e98a5c;--code-bg:#211f1b;color-scheme:dark;
+  --p0:#a9b6f2;--p1:#e98a5c;--p2:#7fcf9a;--p3:#c9a2dc;--p4:#e0c062;--p5:#7cc6d4;--p6:#e494ad;--p7:#b5c47a;--p8:#9b9486;
 }}
 :root[data-theme="dark"]{
   --bg:#141311;--panel:#1c1a17;--ink:#ece7dc;--muted:#9b9486;--line:#2e2b26;--soft:#24221e;
   --user:#8fc9b4;--user-bg:#1d2a25;--asst:#ece7dc;--think:#cdb877;--tool:#a9b6f2;--tool-bg:#1e2233;
   --ok:#7fcf9a;--err:#f08a7a;--err-bg:#2e1c19;--add:#16291c;--add-ink:#8fd6a6;--del:#2f1a17;--del-ink:#f2a092;
   --accent:#e98a5c;--code-bg:#211f1b;color-scheme:dark;
+  --p0:#a9b6f2;--p1:#e98a5c;--p2:#7fcf9a;--p3:#c9a2dc;--p4:#e0c062;--p5:#7cc6d4;--p6:#e494ad;--p7:#b5c47a;--p8:#9b9486;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans)}
@@ -143,7 +146,9 @@ const fmtTok = n => n >= 1e9 ? (n/1e9).toFixed(1)+"B" : n >= 1e6 ? (n/1e6).toFix
 const fmtDur = s => { s = Math.round(s||0); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60;
   return h ? `${h}h ${String(m).padStart(2,"0")}m` : m ? `${m}m ${String(x).padStart(2,"0")}s` : `${x}s`; };
 const clock = t => t == null ? "" : "+" + fmtDur(t);
-const PALETTE = ["#3b4a8c","#c2562b","#2f7a4b","#8a5a9e","#b08a1e","#2a7b8c","#9b3d5a","#5c6b2e","#6b665c"];
+// Theme-aware: entries are CSS variables; the canvas resolves them at draw time.
+const PALETTE = Array.from({length: 9}, (_, i) => `var(--p${i})`);
+const resolveVar = v => v.startsWith("var(") ? getComputedStyle(document.documentElement).getPropertyValue(v.slice(4, -1)).trim() : v;
 
 /* ---------- header ---------- */
 const S = D.stats, U = D.usage;
@@ -290,7 +295,7 @@ function drawStrip() {
     else if (e.k === "tool_call" || e.k === "tool_result") { col = colorOf[e.tool] || PALETTE[8]; y = h * .3; hh = h * .7; }
     else if (e.k === "thinking") { col = C.thinking; y = h * .55; hh = h * .45; }
     else { col = C.assistant; y = h * .45; hh = h * .55; }
-    ctx.fillStyle = col; ctx.fillRect(x, y, Math.ceil(bw), hh);
+    ctx.fillStyle = resolveVar(col); ctx.fillRect(x, y, Math.ceil(bw), hh);
   });
 }
 function setHead(i) { head.style.left = (Math.min(i, nodes.length) / Math.max(nodes.length,1) * 100) + "%"; }
